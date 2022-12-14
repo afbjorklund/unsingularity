@@ -8,10 +8,10 @@ Requires squashfs-tools to be installed on the host.
 
 `unsingularity [-h] [-c] [-d DIRECTORY] [-e EXTRACT] [-l] [sif]...`
 
-`-c`: cat files after extracting
-`-e`: extract only certain files
-`-d`: directory (default: `squashfs-root`)
-`-l`: list only, don't extract (`-ll` long)
+* `-c`: cat files after extracting
+* `-e`: extract only certain files
+* `-d`: directory (default: `squashfs-root`)
+* `-l`: list only, don't extract (`-ll` long)
 
 ## Install
 
