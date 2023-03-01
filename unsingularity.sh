@@ -29,4 +29,6 @@ for sif in "$@"; do
 	unsquashfs $noprogress -o $offset $ls -d $directory -e $extract $sif | tail -n $tail
 	if $cat; then xargs -I% cat $directory/% <$extract; rm -rf "$directory"; fi
 done
-rm $extract
+rm $extract || exit 1
+
+exit 0
