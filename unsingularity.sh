@@ -42,10 +42,9 @@ for sif in "$@"; do
 		offset=$(apptainer sif list "$sif" | grep Squashfs | cut -d'|' -f4 | cut -d'-' -f1)
 		unsquashfs $noprogress -o $offset $ls -d $directory -e $extract $sif | tail -n $tail
 	elif $mount; then
-		layer=$(apptainer sif list "$sif" | grep Squashfs | cut -d'|' -f1)
-		apptainer sif dump $layer "$sif" > "$sif.squashfs"
+		offset=$(apptainer sif list "$sif" | grep Squashfs | cut -d'|' -f4 | cut -d'-' -f1)
 		mkdir -p $directory
-		$squashfuse $sif.squashfs $directory
+		$squashfuse -o offset=$offset $sif $directory
 	else
 		layer=$(apptainer sif list "$sif" | grep Squashfs | cut -d'|' -f1)
 		apptainer sif dump $layer "$sif" > "$sif.squashfs"

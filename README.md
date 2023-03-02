@@ -18,11 +18,7 @@ Requires squashfs-tools to be installed on the host.
 
 If you use the mount flag (`-m`), the filesystem is FUSE mounted.
 
-The .squashfs filesystem is extracted from the .sif file first.
-
 When done with the files, use: `fuserunmount` (`fusermount -u`).
-
-To free up disk space, you can remove the `.sif.squashfs` file.
 
 ## Install
 
