@@ -43,13 +43,13 @@ fi
 
 for sif in "$@"; do
 	if $cat; then directory=$(mktemp -d); rmdir "$directory"; noprogress="-n"; tail="+10"; fi
-	if [ $has_offset -a ! $mount ]; then
-		offset=$($siftool list "$sif" | grep Squashfs | cut -d'|' -f4 | cut -d'-' -f1)
-		unsquashfs $noprogress -o $offset $ls -d $directory -e $extract $sif | tail -n $tail
-	elif $mount; then
+	if $mount; then
 		offset=$($siftool list "$sif" | grep Squashfs | cut -d'|' -f4 | cut -d'-' -f1)
 		mkdir -p $directory
 		$squashfuse -o offset=$offset $sif $directory
+	elif $has_offset; then
+		offset=$($siftool list "$sif" | grep Squashfs | cut -d'|' -f4 | cut -d'-' -f1)
+		unsquashfs $noprogress -o $offset $ls -d $directory -e $extract $sif | tail -n $tail
 	else
 		layer=$($siftool list "$sif" | grep Squashfs | cut -d'|' -f1)
 		$siftool dump $layer "$sif" > "$sif.squashfs"
