@@ -3,13 +3,14 @@
 # Written by Anders F Björklund <anders.f.bjorklund@gmail.com>
 cat=false
 directory="squashfs-root"
+mount=false
 extract=$(mktemp)
 ls=""
 noprogress=""
 tail="+4"
-usage="$0 [-h] [-c] [-d DIRECTORY] [-e EXTRACT] [-l] [sif]..."
+usage="$0 [-h] [-c] [-d DIRECTORY] [-e EXTRACT] [-l] [-m] [sif]..."
 
-while getopts cd:e:hl name
+while getopts cd:e:hlm name
 do
 	case $name in
 		c) cat=true;;
@@ -17,6 +18,7 @@ do
 		e) echo "$OPTARG" >> $extract;;
 		h) echo "Usage: $usage";;
 		l) if [ -z "$ls" ]; then ls="-l"; else ls="-ll"; fi;;
+		m) mount=true;;
 		*) exit 1;;
 	esac
 	export l
@@ -28,12 +30,22 @@ if unsquashfs -h 2>&1 | grep -- -o >/dev/null; then
 else
 	has_offset=false
 fi
+if $(which squashfuse >/dev/null 2>&1); then
+	squashfuse=squashfuse
+else
+	squashfuse=$(dirname $(which apptainer))/../libexec/apptainer/bin/squashfuse_ll
+fi
 
 for sif in "$@"; do
 	if $cat; then directory=$(mktemp -d); rmdir "$directory"; noprogress="-n"; tail="+10"; fi
-	if $hasoffset; then
+	if [ $has_offset -a ! $mount ]; then
 		offset=$(apptainer sif list "$sif" | grep Squashfs | cut -d'|' -f4 | cut -d'-' -f1)
 		unsquashfs $noprogress -o $offset $ls -d $directory -e $extract $sif | tail -n $tail
+	elif $mount; then
+		layer=$(apptainer sif list "$sif" | grep Squashfs | cut -d'|' -f1)
+		apptainer sif dump $layer "$sif" > "$sif.squashfs"
+		mkdir -p $directory
+		$squashfuse $sif.squashfs $directory
 	else
 		layer=$(apptainer sif list "$sif" | grep Squashfs | cut -d'|' -f1)
 		apptainer sif dump $layer "$sif" > "$sif.squashfs"
