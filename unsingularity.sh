@@ -25,6 +25,11 @@ do
 done
 shift $((OPTIND - 1))
 
+if $(which siftool >/dev/null 2>&1); then
+	siftool=siftool
+else
+	siftool="apptainer sif"
+fi
 if unsquashfs -h 2>&1 | grep -- -o >/dev/null; then
 	has_offset=true
 else
@@ -39,15 +44,15 @@ fi
 for sif in "$@"; do
 	if $cat; then directory=$(mktemp -d); rmdir "$directory"; noprogress="-n"; tail="+10"; fi
 	if [ $has_offset -a ! $mount ]; then
-		offset=$(apptainer sif list "$sif" | grep Squashfs | cut -d'|' -f4 | cut -d'-' -f1)
+		offset=$($siftool list "$sif" | grep Squashfs | cut -d'|' -f4 | cut -d'-' -f1)
 		unsquashfs $noprogress -o $offset $ls -d $directory -e $extract $sif | tail -n $tail
 	elif $mount; then
-		offset=$(apptainer sif list "$sif" | grep Squashfs | cut -d'|' -f4 | cut -d'-' -f1)
+		offset=$($siftool list "$sif" | grep Squashfs | cut -d'|' -f4 | cut -d'-' -f1)
 		mkdir -p $directory
 		$squashfuse -o offset=$offset $sif $directory
 	else
-		layer=$(apptainer sif list "$sif" | grep Squashfs | cut -d'|' -f1)
-		apptainer sif dump $layer "$sif" > "$sif.squashfs"
+		layer=$($siftool list "$sif" | grep Squashfs | cut -d'|' -f1)
+		$siftool dump $layer "$sif" > "$sif.squashfs"
 		unsquashfs $noprogress $ls -d $directory -e $extract $sif.squashfs | tail -n $tail
 		rm "$sif.squashfs"
 	fi
