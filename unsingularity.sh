@@ -5,18 +5,20 @@ cat=false
 directory="squashfs-root"
 mount=false
 extract=$(mktemp)
+inspect=false
 ls=""
 noprogress=""
 tail="+4"
-usage="$0 [-h] [-c] [-d DIRECTORY] [-e EXTRACT] [-l] [-m] [sif]..."
+usage="$0 [-h] [-c] [-d DIRECTORY] [-e EXTRACT] [-i] [-l] [-m] [sif]..."
 
-while getopts cd:e:hlm name
+while getopts cd:e:hilm name
 do
 	case $name in
 		c) cat=true;;
 		d) directory="$OPTARG";;
 		e) echo "$OPTARG" >> $extract;;
 		h) echo "Usage: $usage";;
+		i) inspect=true;;
 		l) if [ -z "$ls" ]; then ls="-l"; else ls="-ll"; fi;;
 		m) mount=true;;
 		*) exit 1;;
@@ -47,6 +49,9 @@ for sif in "$@"; do
 		offset=$($siftool list "$sif" | grep Squashfs | cut -d'|' -f4 | cut -d'-' -f1)
 		mkdir -p $directory
 		$squashfuse -o offset=$offset $sif $directory
+	elif $inspect; then
+		json=2
+		$siftool dump $json "$sif" | yq -p json .data.attributes.labels
 	elif $has_offset; then
 		offset=$($siftool list "$sif" | grep Squashfs | cut -d'|' -f4 | cut -d'-' -f1)
 		unsquashfs $noprogress -o $offset $ls -d $directory -e $extract $sif | tail -n $tail

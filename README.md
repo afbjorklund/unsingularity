@@ -11,6 +11,7 @@ Requires squashfs-tools to be installed on the host.
 * `-c`: cat files after extracting
 * `-e`: extract only certain files
 * `-d`: directory (default: `squashfs-root`)
+* `-i`: inspect metadata, don't extract
 * `-l`: list only, don't extract (`-ll` long)
 * `-m`: use `squashfuse`, instead of `unsquashfs`
 
