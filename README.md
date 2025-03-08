@@ -29,6 +29,6 @@ When done with the files, use: `fuserunmount` (`fusermount -u`).
 
 `unsingularity alpine.sif`
 
-`unsingularity -e /etc/os-release -c alpine.sif`
+`unsingularity -e /usr/lib/os-release -c alpine.sif`
 
 `unsingularity -ll debian.sif`
