@@ -4,6 +4,10 @@ Extract files from a Singularity/Apptainer SIF file.
 
 Requires squashfs-tools to be installed on the host.
 
+Also requires either of `siftool` or `apptainer`.
+
+<https://github.com/sylabs/sif>
+
 ## Usage
 
 `unsingularity [-h] [-c] [-d DIRECTORY] [-e EXTRACT] [-l] [sif]...`
