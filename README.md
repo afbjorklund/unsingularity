@@ -18,12 +18,17 @@ Also requires either of `siftool` or `apptainer`.
 * `-i`: inspect metadata, don't extract
 * `-l`: list only, don't extract (`-ll` long)
 * `-m`: use `squashfuse`, instead of `unsquashfs`
+* `-n`: use `squashnfs`, instead of `squashfuse`
 
 ## Mount
 
 If you use the mount flag (`-m`), the filesystem is FUSE mounted.
 
 When done with the files, use: `fuserunmount` (`fusermount -u`).
+
+If you use the nfs mount flag (`-n`), it is instead NFS mounted.
+
+When done with the files, use: `squashnfs -u` (or unmount it).
 
 ## Install
 
