@@ -7,12 +7,13 @@ mount=false
 nfsmount=false
 extract=$(mktemp)
 inspect=false
+stat=false
 ls=""
 noprogress=""
 tail="+4"
-usage="$0 [-h] [-c] [-d DIRECTORY] [-e EXTRACT] [-i] [-l] [-m] [-n] [sif]..."
+usage="$0 [-h] [-c] [-d DIRECTORY] [-e EXTRACT] [-i] [-l] [-m] [-n] [-s] [sif]..."
 
-while getopts cd:e:hilmn name
+while getopts cd:e:hilmns name
 do
 	case $name in
 		c) cat=true;;
@@ -23,6 +24,7 @@ do
 		l) if [ -z "$ls" ]; then ls="-l"; else ls="-ll"; fi;;
 		m) mount=true;;
 		n) nfsmount=true;;
+		s) stat=true;;
 		*) exit 1;;
 	esac
 	export l
@@ -60,11 +62,19 @@ for sif in "$@"; do
 		$siftool dump $json "$sif" | yq -p json .data.attributes.labels
 	elif $has_offset; then
 		offset=$($siftool list "$sif" | grep Squashfs | cut -d'|' -f4 | cut -d'-' -f1)
-		unsquashfs $noprogress -o $offset $ls -d $directory -e $extract $sif | tail -n $tail
+		if $stat; then
+			unsquashfs -o $offset -s $sif
+		else
+			unsquashfs $noprogress -o $offset $ls -d $directory -e $extract $sif | tail -n $tail
+		fi
 	else
 		layer=$($siftool list "$sif" | grep Squashfs | cut -d'|' -f1)
 		$siftool dump $layer "$sif" > "$sif.squashfs"
-		unsquashfs $noprogress $ls -d $directory -e $extract $sif.squashfs | tail -n $tail
+		if $stat; then
+			unsquashfs -s $sif.squashfs
+		else
+			unsquashfs $noprogress $ls -d $directory -e $extract $sif.squashfs | tail -n $tail
+		fi
 		rm "$sif.squashfs"
 	fi
 	if $cat; then xargs -I% cat $directory/% <$extract; rm -rf "$directory"; fi
