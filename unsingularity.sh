@@ -8,12 +8,13 @@ nfsmount=false
 extract=$(mktemp)
 inspect=false
 stat=false
+tree=false
 ls=""
 noprogress=""
 tail="+4"
-usage="$0 [-h] [-c] [-d DIRECTORY] [-e EXTRACT] [-i] [-l] [-m] [-n] [-s] [sif]..."
+usage="$0 [-h] [-c] [-d DIRECTORY] [-e EXTRACT] [-i] [-l] [-m] [-n] [-s] [-t] [sif]..."
 
-while getopts cd:e:hilmns name
+while getopts cd:e:hilmnst name
 do
 	case $name in
 		c) cat=true;;
@@ -25,6 +26,7 @@ do
 		m) mount=true;;
 		n) nfsmount=true;;
 		s) stat=true;;
+		t) tree=true;;
 		*) exit 1;;
 	esac
 	export l
@@ -64,16 +66,20 @@ for sif in "$@"; do
 		offset=$($siftool list "$sif" | grep Squashfs | cut -d'|' -f4 | cut -d'-' -f1)
 		if $stat; then
 			unsquashfs -o $offset -s $sif
-		else
+		elif ! $tree; then
 			unsquashfs $noprogress -o $offset $ls -d $directory -e $extract $sif | tail -n $tail
+		else
+			unsquashfs $noprogress -o $offset -l -d $directory -e $extract $sif | tail -n $tail | tree --fromfile /dev/stdin
 		fi
 	else
 		layer=$($siftool list "$sif" | grep Squashfs | cut -d'|' -f1)
 		$siftool dump $layer "$sif" > "$sif.squashfs"
 		if $stat; then
 			unsquashfs -s $sif.squashfs
-		else
+		elif ! $tree; then
 			unsquashfs $noprogress $ls -d $directory -e $extract $sif.squashfs | tail -n $tail
+		else
+			unsquashfs $noprogress -l -d $directory -e $extract $sif.squashfs | tail -n $tail | tree --fromfile /dev/stdin
 		fi
 		rm "$sif.squashfs"
 	fi
