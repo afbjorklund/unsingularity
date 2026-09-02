@@ -51,6 +51,7 @@ fi
 
 for sif in "$@"; do
 	if $cat; then directory=$(mktemp -d); rmdir "$directory"; noprogress="-n"; tail="+10"; fi
+	title=$(basename "$sif")
 	if $mount; then
 		offset=$($siftool list "$sif" | grep Squashfs | cut -d'|' -f4 | cut -d'-' -f1)
 		mkdir -p $directory
@@ -69,7 +70,7 @@ for sif in "$@"; do
 		elif ! $tree; then
 			unsquashfs $noprogress -o $offset $ls -d $directory -e $extract $sif | tail -n $tail
 		else
-			unsquashfs $noprogress -o $offset -l -d $directory -e $extract $sif | tail -n $tail | tree --fromfile /dev/stdin
+			unsquashfs $noprogress -o $offset -l -d $directory -e $extract $sif | tail -n $tail | tree -C --fromfile /dev/stdin | sed -e "s|^/dev/stdin\$|$title|"
 		fi
 	else
 		layer=$($siftool list "$sif" | grep Squashfs | cut -d'|' -f1)
@@ -79,7 +80,7 @@ for sif in "$@"; do
 		elif ! $tree; then
 			unsquashfs $noprogress $ls -d $directory -e $extract $sif.squashfs | tail -n $tail
 		else
-			unsquashfs $noprogress -l -d $directory -e $extract $sif.squashfs | tail -n $tail | tree --fromfile /dev/stdin
+			unsquashfs $noprogress -l -d $directory -e $extract $sif.squashfs | tail -n $tail | tree -C --fromfile /dev/stdin | sed -e "s|^/dev/stdin\$|$title|"
 		fi
 		rm "$sif.squashfs"
 	fi
