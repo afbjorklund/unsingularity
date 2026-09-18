@@ -11,7 +11,7 @@ stat=false
 tree=false
 ls=""
 noprogress=""
-tail="+4"
+tail="+1"
 usage="$0 [-h] [-c] [-d DIRECTORY] [-e EXTRACT] [-i] [-l] [-m] [-n] [-s] [-t] [sif]..."
 
 while getopts cd:e:hilmnst name
